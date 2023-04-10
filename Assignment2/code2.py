@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 # Read the input image
 background_img = cv2.imread('./images/christmasBB.jpg')
-img = cv2.imread('./images/birdBB.jpg')
+img = cv2.imread('./images/download2.jpg')
 
 # separate each RGB component into a different matrix
 B, G, R = cv2.split(img)
