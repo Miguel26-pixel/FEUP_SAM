@@ -33,3 +33,4 @@ with open('FinalProject/example.pdf', 'rb') as pdf_file:
         # Print the text
         print(f"Page {page_num+1}:")
         print(page_text)
+
