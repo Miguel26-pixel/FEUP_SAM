@@ -2,27 +2,78 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from tkinter import ttk
+import time
+
+from extract import extract_text
+import threading
+import pyttsx3
+
+#global reading
+reading = False
+sentenceIndex = 0
+engine = pyttsx3.init()
 
 def play():
-    file_path = filedialog.askopenfilename()
+    # file_path = filedialog.askopenfilename()
     # TODO: Implement file upload functionality
-    print("Uploaded file:", file_path)
+    global reading
+    print("Reading: ", reading)
+    reading = not reading
 
 def upload_file():
-    file_path = filedialog.askopenfilename()
+    file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
+    file_path = filedialog.askopenfilename(filetypes=file_types)
     # TODO: Implement file upload functionality
     print("Uploaded file:", file_path)
+    read_document(file_path)
 
 def download_file():
     # TODO: Implement file download functionality
     print("Downloading file")
 
 def left():
-    print(' # TODO: Implement file upload functionality')
+    global sentenceIndex
+    sentenceIndex -= 1
 
 
 def right():
-    print(' # TODO: Implement file upload functionality')
+    global sentenceIndex
+    sentenceIndex += 1
+
+def read_document(filePath):
+    text = extract_text(filePath)
+    global reading
+    reading = True
+
+    global sentenceIndex
+    sentenceIndex = 0
+    readThread = threading.Thread(target=read_text, args=(text))
+    readThread.start()
+
+def read_text(*text):
+    global sentenceIndex
+    while(sentenceIndex < len(text)):
+        global reading
+        if(reading):
+            global engine
+            voices = engine.getProperty('voices')
+            engine.setProperty('voice', voices[0].id)
+
+            update_text_area(text[sentenceIndex])
+
+            engine.say(text[sentenceIndex])
+            engine.runAndWait()
+            engine.stop()
+            sentenceIndex += 1
+
+        else:
+            time.sleep(0.1)
+
+def update_text_area(text): 
+    text_area.delete(1.0, tk.END)
+    text_area.insert(tk.END, text)
+
+    
 
 
 # Create the main window
