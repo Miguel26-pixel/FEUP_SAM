@@ -2,8 +2,6 @@ import PyPDF2
 import os
 import re
 import docx
-from docx import Document
-from pdfdocument.document import PDFDocument
 
 def _clean_text(text):
     max_char_seq = 3
@@ -13,7 +11,7 @@ def _clean_text(text):
 
     pattern = r'({})'.format('|'.join('(?:{}{{{},}})'.format(re.escape(sym), max_char_seq + 1) for sym in symbols))
     cleaned_text = re.sub(pattern, '', text)
-    cleaned_text = re.split(r'(\.\.\.|\.+|\?|!|\n\n)', cleaned_text)
+    cleaned_text = re.split(r'(\.\.\.|\.+|\?|!|\n\n|\:|\;|\,)', cleaned_text)
 
     cleaned_text = [substring.strip() for substring in cleaned_text if substring.strip()]
 
