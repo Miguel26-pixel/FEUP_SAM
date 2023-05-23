@@ -180,14 +180,13 @@ response_label.pack(anchor=tk.W)
 response_text = tk.Text(responses_frame, height=5, width=50)
 response_text.pack(pady=5)
 
-def doSomething():
-    print("whyusippin")
+def close_main_windows():
     settings.appRunning = False
     while(settings.reading):
         time.sleep(0.1)
     window.destroy()
 
-window.protocol('WM_DELETE_WINDOW', doSomething)  # root is your root window
+window.protocol('WM_DELETE_WINDOW', close_main_windows)  # root is your root window
 
 # Run the main event loop
 settings.appRunning = True
