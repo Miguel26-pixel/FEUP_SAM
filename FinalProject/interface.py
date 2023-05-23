@@ -4,67 +4,77 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 import time
 
-from extract import extract_text
+from extract import extract_text, join_text
 import threading
 import pyttsx3
 
-#global reading
-reading = False
-sentenceIndex = 0
-engine = pyttsx3.init()
+import settings
+settings.init()
 
 def play():
     # file_path = filedialog.askopenfilename()
     # TODO: Implement file upload functionality
-    global reading
-    print("Reading: ", reading)
-    reading = not reading
+    print("Reading: ", settings.reading)
+    settings.reading = not settings.reading
 
 def upload_file():
     file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
     file_path = filedialog.askopenfilename(filetypes=file_types)
     # TODO: Implement file upload functionality
     print("Uploaded file:", file_path)
+
+    settings.filePath = file_path
     read_document(file_path)
 
 def download_file():
     # TODO: Implement file download functionality
-    print("Downloading file")
+    print("Converting and Downloading file")
+    thread = threading.Thread(target=convert_and_download)
+    thread.start()
+
+
+def convert_and_download():
+    text = join_text(extract_text(settings.filePath))
+
+    engine = pyttsx3.init()
+
+    engine.save_to_file(text, 'file.wav')
+
+    engine.runAndWait()
 
 def left():
-    global sentenceIndex
-    sentenceIndex -= 1
+    settings.sentenceIndex -= 1
 
 
 def right():
-    global sentenceIndex
-    sentenceIndex += 1
+    settings.sentenceIndex += 1
 
 def read_document(filePath):
     text = extract_text(filePath)
-    global reading
-    reading = True
+    settings.reading = True
 
-    global sentenceIndex
-    sentenceIndex = 0
+    settings.sentenceIndex = 0
     readThread = threading.Thread(target=read_text, args=(text))
     readThread.start()
 
 def read_text(*text):
-    global sentenceIndex
-    while(sentenceIndex < len(text)):
-        global reading
-        if(reading):
-            global engine
+    while(settings.sentenceIndex < len(text)):
+        if(settings.appRunning == False):
+            settings.reading = False
+            return
+        
+        if(settings.reading):
+            engine = pyttsx3.init()
+
             voices = engine.getProperty('voices')
             engine.setProperty('voice', voices[0].id)
 
-            update_text_area(text[sentenceIndex])
+            update_text_area(text[settings.sentenceIndex])
 
-            engine.say(text[sentenceIndex])
+            engine.say(text[settings.sentenceIndex])
             engine.runAndWait()
             engine.stop()
-            sentenceIndex += 1
+            settings.sentenceIndex += 1
 
         else:
             time.sleep(0.1)
@@ -170,5 +180,15 @@ response_label.pack(anchor=tk.W)
 response_text = tk.Text(responses_frame, height=5, width=50)
 response_text.pack(pady=5)
 
+def doSomething():
+    print("whyusippin")
+    settings.appRunning = False
+    while(settings.reading):
+        time.sleep(0.1)
+    window.destroy()
+
+window.protocol('WM_DELETE_WINDOW', doSomething)  # root is your root window
+
 # Run the main event loop
+settings.appRunning = True
 window.mainloop()
