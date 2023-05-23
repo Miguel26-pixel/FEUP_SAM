@@ -5,7 +5,7 @@ import docx
 from docx import Document
 from pdfdocument.document import PDFDocument
 
-def _clean_text(text) -> tuple():
+def _clean_text(text):
     max_char_seq = 3
     cleaned_text = re.sub(r'[^a-zA-Z0-9\s.,;\-_\'?()/&%$#\"!\\@£€{}\[\]+*~^<>]', '', text)
     symbols = ['.', ',', ';', '-', '_', "'", '?', '(', ')', '/', '&', '%', '$', '#', '"', '!', '\\', 
@@ -13,14 +13,15 @@ def _clean_text(text) -> tuple():
 
     pattern = r'({})'.format('|'.join('(?:{}{{{},}})'.format(re.escape(sym), max_char_seq + 1) for sym in symbols))
     cleaned_text = re.sub(pattern, '', text)
-    cleaned_text = re.split(r'\.\.\.|\.+|\?|!|\n\n', cleaned_text)
+    cleaned_text = re.split(r'(\.\.\.|\.+|\?|!|\n\n)', cleaned_text)
 
     cleaned_text = [substring.strip() for substring in cleaned_text if substring.strip()]
+
+    cleaned_text = [cleaned_text[index] + cleaned_text[index+1] for index in range(0, len(cleaned_text)-1, 2)]
     
     return tuple(cleaned_text)
 
-
-def _extract_pdf(pdf_path) -> str:
+def _extract_pdf(pdf_path):
     text = ""
     
     with open(pdf_path, 'rb') as file:
@@ -33,7 +34,6 @@ def _extract_pdf(pdf_path) -> str:
             
     return _clean_text(text)
 
-
 def _extract_docx(file_path):
     doc = docx.Document(file_path)
     text = ' '.join([paragraph.text for paragraph in doc.paragraphs])
@@ -44,8 +44,7 @@ def _extract_txt(file_path):
         text = file.read()
     return _clean_text(text)
 
-
-def extract_text(file) -> tuple():
+def extract_text(file: str) -> tuple[str, ...]:
     ext = os.path.splitext(file)[-1].lower()
 
     match ext:
@@ -58,6 +57,8 @@ def extract_text(file) -> tuple():
         case _:
             raise Exception(("File format {} not supported").format(ext))
 
+def join_text(sentences) -> str:
+    return ' '.join(sentences)
 
 if(__name__ == '__main__'):
 
