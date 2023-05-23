@@ -78,7 +78,7 @@ def update_text_area(text):
 
 # Create the main window
 window = tk.Tk()
-window.title("My Music App")
+window.title("Speechify")
 window.geometry("800x600")  # Set the window size
 
 # Create a header frame

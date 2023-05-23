@@ -6,7 +6,7 @@ from docx import Document
 from pdfdocument.document import PDFDocument
 
 def _clean_text(text) -> tuple():
-    max_char_seq = 3;
+    max_char_seq = 3
     cleaned_text = re.sub(r'[^a-zA-Z0-9\s.,;\-_\'?()/&%$#\"!\\@£€{}\[\]+*~^<>]', '', text)
     symbols = ['.', ',', ';', '-', '_', "'", '?', '(', ')', '/', '&', '%', '$', '#', '"', '!', '\\', 
                     '@', '£', '€', '{', '[', ']', '}', '+', '*', '~', '^', '<', '>']
