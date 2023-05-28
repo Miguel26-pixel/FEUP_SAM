@@ -67,33 +67,24 @@ def read_text(*text):
         
         if(settings.reading):
 
+            engine = pyttsx3.init()
+
+            voices = engine.getProperty('voices')
+
             if (not change):
 
-                engine = pyttsx3.init()
-
-                voices = engine.getProperty('voices')
                 engine.setProperty('voice', voices[0].id)
-
-                update_text_area(text[settings.sentenceIndex])
-
-                engine.say(text[settings.sentenceIndex])
-                engine.runAndWait()
-                engine.stop()
-                settings.sentenceIndex += 1
             
             else:
 
-                engine = pyttsx3.init()
-
-                voices = engine.getProperty('voices')
                 engine.setProperty('voice', voices[1].id)
+            
+            update_text_area(text[settings.sentenceIndex])
 
-                update_text_area(text[settings.sentenceIndex])
-
-                engine.say(text[settings.sentenceIndex])
-                engine.runAndWait()
-                engine.stop()
-                settings.sentenceIndex += 1
+            engine.say(text[settings.sentenceIndex])
+            engine.runAndWait()
+            engine.stop()
+            settings.sentenceIndex += 1
 
 
         else:
