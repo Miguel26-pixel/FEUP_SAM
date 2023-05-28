@@ -111,29 +111,37 @@ def change_voice(is_Female):
         global change
         change = is_Female
 
-    
 
+# Colors
+LGRAY = '#545454'
+DGRAY = '#242424'
+RGRAY = '#2e2e2e'
+BLUE = '#39DfE3'
+GREEN = '#39E392'
+WHITE = '#F8F8F8'
 
 # Create the main window
 window = tk.Tk()
 window.title("Speechify")
-window.geometry("800x600")  # Set the window size
+window.geometry("600x500")  # Set the window size
+window.configure(bg=DGRAY)
+window.resizable(False, False)
 
 # Create a header frame
-header_frame = tk.Frame(window, bg="#1DB954", height=80)
+header_frame = tk.Frame(window, bg=DGRAY, height=80)
 header_frame.pack(fill=tk.X)
 
 # Create a logo label
-logo_label = tk.Label(header_frame, text="SPEECHIFY", font=("Arial", 24), fg="white", bg="#1DB954")
+logo_label = tk.Label(header_frame, text="SPEECHIFY", font=("Arial", 24), fg=GREEN, bg=DGRAY)
 logo_label.pack(pady=10)
 
 
 # Criar um frame para o conteúdo
-content_frame = tk.Frame(window, bg="white", padx=20, pady=20)
+content_frame = tk.Frame(window, bg=DGRAY, padx=20, pady=20)
 content_frame.pack(fill=tk.BOTH, expand=True)
 
 # Criar a área de texto
-text_area = tk.Text(content_frame, height=10, width=50)
+text_area = tk.Text(content_frame, height=10, width=50, borderwidth=5)
 text_area.pack(pady=10, padx=(0, 10))
 
 # Load button icons
@@ -159,27 +167,30 @@ left_image = ImageTk.PhotoImage(left_icon)
 right_image = ImageTk.PhotoImage(right_icon)
 
 # Create a frame for the buttons
-buttons_frame = tk.Frame(content_frame)
+buttons_frame = tk.Frame(content_frame, background=DGRAY)
 buttons_frame.pack(side=tk.TOP, padx=10, pady=10)
 
+style = ttk.Style()
+style.configure('Custom.TButton', background=DGRAY)
+
 # Create buttons with icons
-download_button = ttk.Button(buttons_frame, image=download_image, command=download_file)
+download_button = ttk.Button(buttons_frame, image=download_image, command=download_file, style='Custom.TButton')
 download_button.pack(side=tk.LEFT, padx=5)
 
-left_button = ttk.Button(buttons_frame, image=left_image, command=left)
+left_button = ttk.Button(buttons_frame, image=left_image, command=left, style='Custom.TButton')
 left_button.pack(side=tk.LEFT, padx=5)
 
-play_button = ttk.Button(buttons_frame, image=play_image, command=play)
+play_button = ttk.Button(buttons_frame, image=play_image, command=play, style='Custom.TButton')
 play_button.pack(side=tk.LEFT, padx=5)
 
-right_button = ttk.Button(buttons_frame, image=right_image, command=right)
+right_button = ttk.Button(buttons_frame, image=right_image, command=right, style='Custom.TButton')
 right_button.pack(side=tk.LEFT, padx=5)
 
-upload_button = ttk.Button(buttons_frame, image=upload_image, command=upload_file)
+upload_button = ttk.Button(buttons_frame, image=upload_image, command=upload_file, style='Custom.TButton')
 upload_button.pack(side=tk.LEFT, padx=5)
 
 # Create a frame for the progress bar
-progress_frame = tk.Frame(content_frame)
+progress_frame = tk.Frame(content_frame, background=DGRAY)
 progress_frame.pack(side=tk.TOP, padx=10, pady=5)
 
 # Create a progress bar
@@ -187,27 +198,27 @@ progress_bar = ttk.Progressbar(progress_frame, orient=tk.HORIZONTAL, length=400,
 progress_bar.pack(padx=5)
 
 # Create a frame for the cards
-cards_frame = tk.Frame(content_frame)
+cards_frame = tk.Frame(content_frame, background=DGRAY)
 cards_frame.pack(pady=10)
 
 # Define the card style
 card_style = ttk.Style()
-card_style.configure("Card.TFrame", background="white", relief=tk.RAISED, borderwidth=1)
-card_style.configure("Card.TLabel", font=("Arial", 12))
+card_style.configure("Card.TFrame", background=DGRAY)
+card_style.configure("Card.TLabel", font=("Arial", 12), foreground=WHITE)
 
 # Create cards with name and play button
 for i in range(len(voices)):
     card_frame = ttk.Frame(cards_frame, style="Card.TFrame")
-    card_frame.pack(side=tk.LEFT, padx=10, pady=10)
+    card_frame.pack(side=tk.LEFT, padx=40, pady=10)
 
-    card_name_label = ttk.Label(card_frame, text=voices[i].name.split(" ")[1] + "    ", style="Card.TLabel")
+    card_name_label = ttk.Label(card_frame, background=DGRAY, text=voices[i].name.split(" ")[1] + " ", style="Card.TLabel")
     card_name_label.pack(pady=5, side=tk.LEFT)
 
-    if(i == 0):
-        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(False))
+    if i == 0:
+        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(False), style='Custom.TButton')
         card_play_button.pack(pady=5)
     else:
-        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(True))
+        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(True), style='Custom.TButton')
         card_play_button.pack(pady=5)
 
 def close_main_windows():
