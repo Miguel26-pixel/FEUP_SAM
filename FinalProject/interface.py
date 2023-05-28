@@ -235,7 +235,7 @@ cards_frame.pack(pady=10)
 # Define the card style
 card_style = ttk.Style()
 card_style.configure("Card.TFrame", background=DGRAY)
-card_style.configure("Card.TLabel", font=("Arial", 12), foreground=WHITE)
+card_style.configure("Card.TLabel", font=("Arial", 12), foreground="black")
 
 # Create cards with name and play button
 for i, voice in enumerate(pyttsx3.init().getProperty('voices')):
