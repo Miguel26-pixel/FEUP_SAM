@@ -3,6 +3,9 @@ def init():
     global appRunning
     appRunning = False
 
+    global savingFile
+    savingFile = False
+
     global reading
     reading = False
 
@@ -11,3 +14,9 @@ def init():
 
     global sentenceIndex
     sentenceIndex = -1
+
+    global temp_dir
+    temp_dir = ""
+
+    global temp_wav_path
+    temp_wav_path = ""
