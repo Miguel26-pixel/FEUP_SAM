@@ -8,6 +8,10 @@ from extract import extract_text, join_text
 import threading
 import pyttsx3
 
+import tempfile
+import shutil
+import os
+
 import settings
 settings.init()
 
@@ -34,13 +38,11 @@ def download_file():
 
 
 def convert_and_download():
-    text = join_text(extract_text(settings.filePath))
-
-    engine = pyttsx3.init()
-
-    engine.save_to_file(text, 'file.wav')
-
-    engine.runAndWait()
+    downloads_folder = os.path.expanduser('~/Downloads')
+    final_wav_path = os.path.join(downloads_folder, '{}.wav'.format(settings.filePath))
+    print(settings.temp_wav_path)
+    print(final_wav_path)
+    shutil.move(settings.temp_wav_path, final_wav_path)
 
 def left():
     settings.sentenceIndex -= 1
@@ -50,12 +52,24 @@ def right():
     settings.sentenceIndex += 1
 
 def read_document(filePath):
+    engine = pyttsx3.init()
+
+    settings.temp_wav_path = os.path.join(settings.temp_dir, '{}.wav'.format(filePath))
+    textComplete = join_text(extract_text(settings.filePath))
+    engine.save_to_file(textComplete, settings.temp_wav_path)
+
+    engine.runAndWait()
+
+
     text = extract_text(filePath)
     settings.reading = True
 
     settings.sentenceIndex = 0
     readThread = threading.Thread(target=read_text, args=(text))
     readThread.start()
+
+
+    
 
 def read_text(*text):
     while(settings.sentenceIndex < len(text)):
@@ -85,6 +99,7 @@ def update_text_area(text):
 
     
 
+settings.temp_dir = tempfile.mkdtemp()
 
 # Create the main window
 window = tk.Tk()
