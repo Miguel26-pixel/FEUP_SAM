@@ -8,43 +8,63 @@ from extract import extract_text, join_text
 import threading
 import pyttsx3
 
+import tempfile
+import shutil
+import os
+
 import settings
 settings.init()
 
 
 
-def play():
+def play(event=None):
     settings.reading = not settings.reading
 
-def upload_file():
+def upload_file(event=None):
     file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
     file_path = filedialog.askopenfilename(filetypes=file_types)
 
-    settings.filePath = file_path
-    read_document(file_path)
+    if(file_path):
+        settings.filePath = file_path
+        settings.savingFile = True
+        saveThread = threading.Thread(target=save_temporary_audio)
+        saveThread.start()
 
-def download_file():
-    thread = threading.Thread(target=convert_and_download)
-    thread.start()
+        read_document(file_path)
+
+def download_file(event=None):
+    save_file_path = filedialog.asksaveasfilename(filetypes=[('WAV Files', '*.wav')], defaultextension='.wav')
+    #print(settings.temp_wav_path)
+    #print(save_file_path)
+    if(save_file_path):
+        shutil.move(settings.temp_wav_path, save_file_path)
+
+def left(event=None):
+    if(settings.sentenceIndex > 0):
+        settings.sentenceIndex -= 1
+
+def right(event=None):
+    settings.sentenceIndex += 1
 
 
-def convert_and_download():
-    text = join_text(extract_text(settings.filePath))
+def save_temporary_audio():
+    disable_buttons()
 
     engine = pyttsx3.init()
 
-    engine.save_to_file(text, 'file.wav')
-
+    settings.temp_wav_path = os.path.join(settings.temp_dir, '{}.wav'.format(os.path.splitext(os.path.basename(settings.filePath))[0]))
+    textComplete = join_text(extract_text(settings.filePath))
+    engine.save_to_file(textComplete, settings.temp_wav_path)
+    
+    update_text_area("Loading file")
+    
     engine.runAndWait()
 
-def left():
-    settings.sentenceIndex -= 1
-
-
-def right():
-    settings.sentenceIndex += 1
+    settings.savingFile = False
+    enable_buttons()
 
 def read_document(filePath):
+
     text = extract_text(filePath)
     settings.reading = True
 
@@ -59,8 +79,8 @@ def read_text(*text):
             settings.reading = False
             return
         
-        if(settings.reading):
-
+        if(settings.reading and not settings.savingFile):
+    
             engine = pyttsx3.init()
 
             voices = engine.getProperty('voices')
@@ -70,9 +90,9 @@ def read_text(*text):
             update_text_area(text[settings.sentenceIndex])
 
             engine.say(text[settings.sentenceIndex])
+            settings.sentenceIndex += 1
             engine.runAndWait()
             engine.stop()
-            settings.sentenceIndex += 1
 
 
         else:
@@ -87,10 +107,41 @@ def update_text_area(text):
     text_area.delete(1.0, tk.END)
     text_area.insert(tk.END, text)
 
+def disable_buttons():
+    download_button.config(state="disabled")
+
+    left_button.config(state="disabled")
+
+    play_button.config(state="disabled")
+
+    right_button.config(state="disabled")
+
+    upload_button.config(state="disabled")
+
+def enable_buttons():
+    download_button.config(state="normal")
+
+    left_button.config(state="normal")
+
+    play_button.config(state="normal")
+
+    right_button.config(state="normal")
+
+    upload_button.config(state="normal")
+
+def close_main_windows():
+    settings.appRunning = False
+    while(settings.reading):
+        time.sleep(0.1)
+    window.destroy()
+    
+
 
 def change_voice(index): 
         settings.voiceId = index
 
+
+settings.temp_dir = tempfile.mkdtemp()
 
 # Colors
 LGRAY = '#545454'
@@ -133,11 +184,11 @@ right_icon = Image.open("right_icon.jpg")
 
 
 # Resize button icons
-upload_icon = upload_icon.resize((32, 32), Image.ANTIALIAS)
-download_icon = download_icon.resize((32, 32), Image.ANTIALIAS)
-play_icon = play_icon.resize((32, 32), Image.ANTIALIAS)
-left_icon = left_icon.resize((32, 32), Image.ANTIALIAS)
-right_icon = right_icon.resize((32, 32), Image.ANTIALIAS)
+upload_icon = upload_icon.resize((32, 32), Image.LANCZOS)
+download_icon = download_icon.resize((32, 32), Image.LANCZOS)
+play_icon = play_icon.resize((32, 32), Image.LANCZOS)
+left_icon = left_icon.resize((32, 32), Image.LANCZOS)
+right_icon = right_icon.resize((32, 32), Image.LANCZOS)
 
 # Convert icons to Tkinter-compatible format
 upload_image = ImageTk.PhotoImage(upload_icon)
@@ -201,13 +252,13 @@ for i, voice in enumerate(pyttsx3.init().getProperty('voices')):
         card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(1))
         card_play_button.pack(pady=5)
 
-def close_main_windows():
-    settings.appRunning = False
-    while(settings.reading):
-        time.sleep(0.1)
-    window.destroy()
+window.protocol('WM_DELETE_WINDOW', close_main_windows)
 
-window.protocol('WM_DELETE_WINDOW', close_main_windows)  # root is your root window
+window.bind("p", play)
+window.bind("d", download_file)
+window.bind("u", upload_file)
+window.bind("<Left>", left)
+window.bind("<Right>", right)
 
 # Run the main event loop
 settings.appRunning = True
