@@ -117,11 +117,11 @@ right_icon = Image.open("right_icon.jpg")
 
 
 # Resize button icons
-upload_icon = upload_icon.resize((32, 32), Image.ANTIALIAS)
-download_icon = download_icon.resize((32, 32), Image.ANTIALIAS)
-play_icon = play_icon.resize((32, 32), Image.ANTIALIAS)
-left_icon = left_icon.resize((32, 32), Image.ANTIALIAS)
-right_icon = right_icon.resize((32, 32), Image.ANTIALIAS)
+upload_icon = upload_icon.resize((32, 32), Image.LANCZOS)
+download_icon = download_icon.resize((32, 32), Image.LANCZOS)
+play_icon = play_icon.resize((32, 32), Image.LANCZOS)
+left_icon = left_icon.resize((32, 32), Image.LANCZOS)
+right_icon = right_icon.resize((32, 32), Image.LANCZOS)
 
 # Convert icons to Tkinter-compatible format
 upload_image = ImageTk.PhotoImage(upload_icon)
