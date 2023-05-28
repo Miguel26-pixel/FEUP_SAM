@@ -16,50 +16,52 @@ import settings
 settings.init()
 
 def play():
-    # file_path = filedialog.askopenfilename()
-    # TODO: Implement file upload functionality
-    print("Reading: ", settings.reading)
     settings.reading = not settings.reading
 
 def upload_file():
     file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
     file_path = filedialog.askopenfilename(filetypes=file_types)
-    # TODO: Implement file upload functionality
-    print("Uploaded file:", file_path)
+    if(file_path):
+        settings.filePath = file_path
+        settings.savingFile = True
+        saveThread = threading.Thread(target=save_temporary_audio)
+        saveThread.start()
 
-    settings.filePath = file_path
-    read_document(file_path)
+        read_document(file_path)
 
 def download_file():
-    # TODO: Implement file download functionality
-    print("Converting and Downloading file")
-    thread = threading.Thread(target=convert_and_download)
-    thread.start()
+    save_file_path = filedialog.asksaveasfilename(filetypes=[('WAV Files', '*.wav')], defaultextension='.wav')
+    #print(settings.temp_wav_path)
+    #print(save_file_path)
+    if(save_file_path):
+        shutil.move(settings.temp_wav_path, save_file_path)
 
-
-def convert_and_download():
-    downloads_folder = os.path.expanduser('~/Downloads')
-    final_wav_path = os.path.join(downloads_folder, '{}.wav'.format(settings.filePath))
-    print(settings.temp_wav_path)
-    print(final_wav_path)
-    shutil.move(settings.temp_wav_path, final_wav_path)
 
 def left():
-    settings.sentenceIndex -= 1
+    if(settings.sentenceIndex > 0):
+        settings.sentenceIndex -= 1
 
 
 def right():
     settings.sentenceIndex += 1
 
-def read_document(filePath):
+def save_temporary_audio():
+    disable_buttons()
+
     engine = pyttsx3.init()
 
-    settings.temp_wav_path = os.path.join(settings.temp_dir, '{}.wav'.format(filePath))
+    settings.temp_wav_path = os.path.join(settings.temp_dir, '{}.wav'.format(os.path.splitext(os.path.basename(settings.filePath))[0]))
     textComplete = join_text(extract_text(settings.filePath))
     engine.save_to_file(textComplete, settings.temp_wav_path)
-
+    
+    update_text_area("Loading file")
+    
     engine.runAndWait()
 
+    settings.savingFile = False
+    enable_buttons()
+
+def read_document(filePath):
 
     text = extract_text(filePath)
     settings.reading = True
@@ -68,16 +70,13 @@ def read_document(filePath):
     readThread = threading.Thread(target=read_text, args=(text))
     readThread.start()
 
-
-    
-
 def read_text(*text):
     while(settings.sentenceIndex < len(text)):
         if(settings.appRunning == False):
             settings.reading = False
             return
         
-        if(settings.reading):
+        if(settings.reading and not settings.savingFile):
             engine = pyttsx3.init()
 
             voices = engine.getProperty('voices')
@@ -97,7 +96,29 @@ def update_text_area(text):
     text_area.delete(1.0, tk.END)
     text_area.insert(tk.END, text)
 
+def disable_buttons():
+    download_button.config(state="disabled")
+
+    left_button.config(state="disabled")
+
+    play_button.config(state="disabled")
+
+    right_button.config(state="disabled")
+
+    upload_button.config(state="disabled")
+
+def enable_buttons():
+    download_button.config(state="normal")
+
+    left_button.config(state="normal")
+
+    play_button.config(state="normal")
+
+    right_button.config(state="normal")
+
+    upload_button.config(state="normal")
     
+
 
 settings.temp_dir = tempfile.mkdtemp()
 

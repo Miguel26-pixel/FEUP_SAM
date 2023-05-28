@@ -3,6 +3,9 @@ def init():
     global appRunning
     appRunning = False
 
+    global savingFile
+    savingFile = False
+
     global reading
     reading = False
 
