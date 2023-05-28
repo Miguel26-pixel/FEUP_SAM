@@ -17,19 +17,13 @@ settings.init()
 
 
 
-engine = pyttsx3.init()
-
-voices = engine.getProperty('voices')
-
-change = False
-
 def play(event=None):
-    print("Reading: ", settings.reading)
     settings.reading = not settings.reading
 
 def upload_file(event=None):
     file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
     file_path = filedialog.askopenfilename(filetypes=file_types)
+
     if(file_path):
         settings.filePath = file_path
         settings.savingFile = True
@@ -51,7 +45,6 @@ def left(event=None):
 
 def right(event=None):
     settings.sentenceIndex += 1
-
 
 
 def save_temporary_audio():
@@ -81,6 +74,7 @@ def read_document(filePath):
 
 def read_text(*text):
     while(settings.sentenceIndex < len(text)):
+        
         if(settings.appRunning == False):
             settings.reading = False
             return
@@ -91,14 +85,8 @@ def read_text(*text):
 
             voices = engine.getProperty('voices')
 
-            if (not change):
+            engine.setProperty('voice', voices[settings.voiceId].id)
 
-                engine.setProperty('voice', voices[0].id)
-            
-            else:
-
-                engine.setProperty('voice', voices[1].id)
-            
             update_text_area(text[settings.sentenceIndex])
 
             engine.say(text[settings.sentenceIndex])
@@ -110,8 +98,10 @@ def read_text(*text):
         else:
             time.sleep(0.1)
 
-        progress_bar['value'] = (settings.sentenceIndex / len(text)) * 100
-        window.update_idletasks()
+        if(settings.appRunning):
+            progress_bar['value'] = (settings.sentenceIndex / len(text)) * 100
+            window.update_idletasks()
+
 
 def update_text_area(text): 
     text_area.delete(1.0, tk.END)
@@ -147,9 +137,8 @@ def close_main_windows():
     
 
 
-def change_voice(is_Female): 
-        global change
-        change = is_Female
+def change_voice(index): 
+        settings.voiceId = index
 
 
 settings.temp_dir = tempfile.mkdtemp()
@@ -249,18 +238,18 @@ card_style.configure("Card.TFrame", background=DGRAY)
 card_style.configure("Card.TLabel", font=("Arial", 12), foreground=WHITE)
 
 # Create cards with name and play button
-for i in range(len(voices)):
+for i, voice in enumerate(pyttsx3.init().getProperty('voices')):
     card_frame = ttk.Frame(cards_frame, style="Card.TFrame")
     card_frame.pack(side=tk.LEFT, padx=40, pady=10)
 
-    card_name_label = ttk.Label(card_frame, background=DGRAY, text=voices[i].name.split(" ")[1] + " ", style="Card.TLabel")
+    card_name_label = ttk.Label(card_frame, text=voice.name.split(" ")[1] + "    ", style="Card.TLabel")
     card_name_label.pack(pady=5, side=tk.LEFT)
 
-    if i == 0:
-        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(False), style='Custom.TButton')
+    if(i == 0):
+        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(0))
         card_play_button.pack(pady=5)
     else:
-        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(True), style='Custom.TButton')
+        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(1))
         card_play_button.pack(pady=5)
 
 window.protocol('WM_DELETE_WINDOW', close_main_windows)

@@ -15,6 +15,9 @@ def init():
     global sentenceIndex
     sentenceIndex = -1
 
+    global voiceId
+    voiceId = 0
+
     global temp_dir
     temp_dir = ""
 
