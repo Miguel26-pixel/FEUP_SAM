@@ -11,23 +11,25 @@ import pyttsx3
 import settings
 settings.init()
 
+engine = pyttsx3.init()
+
+voices = engine.getProperty('voices')
+
+change = False
+
 def play():
-    # file_path = filedialog.askopenfilename()
-    # TODO: Implement file upload functionality
     print("Reading: ", settings.reading)
     settings.reading = not settings.reading
 
 def upload_file():
     file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
     file_path = filedialog.askopenfilename(filetypes=file_types)
-    # TODO: Implement file upload functionality
     print("Uploaded file:", file_path)
 
     settings.filePath = file_path
     read_document(file_path)
 
 def download_file():
-    # TODO: Implement file download functionality
     print("Converting and Downloading file")
     thread = threading.Thread(target=convert_and_download)
     thread.start()
@@ -64,24 +66,50 @@ def read_text(*text):
             return
         
         if(settings.reading):
-            engine = pyttsx3.init()
 
-            voices = engine.getProperty('voices')
-            engine.setProperty('voice', voices[0].id)
+            if (not change):
 
-            update_text_area(text[settings.sentenceIndex])
+                engine = pyttsx3.init()
 
-            engine.say(text[settings.sentenceIndex])
-            engine.runAndWait()
-            engine.stop()
-            settings.sentenceIndex += 1
+                voices = engine.getProperty('voices')
+                engine.setProperty('voice', voices[0].id)
+
+                update_text_area(text[settings.sentenceIndex])
+
+                engine.say(text[settings.sentenceIndex])
+                engine.runAndWait()
+                engine.stop()
+                settings.sentenceIndex += 1
+            
+            else:
+
+                engine = pyttsx3.init()
+
+                voices = engine.getProperty('voices')
+                engine.setProperty('voice', voices[1].id)
+
+                update_text_area(text[settings.sentenceIndex])
+
+                engine.say(text[settings.sentenceIndex])
+                engine.runAndWait()
+                engine.stop()
+                settings.sentenceIndex += 1
+
 
         else:
             time.sleep(0.1)
 
+        progress_bar['value'] = (settings.sentenceIndex / len(text)) * 100
+        window.update_idletasks()
+
 def update_text_area(text): 
     text_area.delete(1.0, tk.END)
     text_area.insert(tk.END, text)
+
+
+def change_voice(is_Female): 
+        global change
+        change = is_Female
 
     
 
@@ -158,27 +186,29 @@ progress_frame.pack(side=tk.TOP, padx=10, pady=5)
 progress_bar = ttk.Progressbar(progress_frame, orient=tk.HORIZONTAL, length=400, mode='indeterminate')
 progress_bar.pack(padx=5)
 
+# Create a frame for the cards
+cards_frame = tk.Frame(content_frame)
+cards_frame.pack(pady=10)
 
-# Create a frame for the search bar and responses
-search_frame = tk.Frame(content_frame)
-search_frame.pack(side=tk.BOTTOM, padx=10, pady=10)
+# Define the card style
+card_style = ttk.Style()
+card_style.configure("Card.TFrame", background="white", relief=tk.RAISED, borderwidth=1)
+card_style.configure("Card.TLabel", font=("Arial", 12))
 
-# Create a search bar
-search_entry = ttk.Entry(search_frame)
-search_entry.pack(side=tk.LEFT, padx=5)
+# Create cards with name and play button
+for i in range(len(voices)):
+    card_frame = ttk.Frame(cards_frame, style="Card.TFrame")
+    card_frame.pack(side=tk.LEFT, padx=10, pady=10)
 
-search_button = ttk.Button(search_frame, text="Search")
-search_button.pack(side=tk.LEFT, padx=5)
+    card_name_label = ttk.Label(card_frame, text=voices[i].name.split(" ")[1] + "    ", style="Card.TLabel")
+    card_name_label.pack(pady=5, side=tk.LEFT)
 
-# Create a frame for the responses
-responses_frame = tk.Frame(content_frame)
-responses_frame.pack(side=tk.BOTTOM, padx=10, pady=10)
-
-response_label = tk.Label(responses_frame)
-response_label.pack(anchor=tk.W)
-
-response_text = tk.Text(responses_frame, height=5, width=50)
-response_text.pack(pady=5)
+    if(i == 0):
+        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(False))
+        card_play_button.pack(pady=5)
+    else:
+        card_play_button = ttk.Button(card_frame, image=play_image, command=lambda: change_voice(True))
+        card_play_button.pack(pady=5)
 
 def close_main_windows():
     settings.appRunning = False
