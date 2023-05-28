@@ -15,10 +15,10 @@ import os
 import settings
 settings.init()
 
-def play():
+def play(event=None):
     settings.reading = not settings.reading
 
-def upload_file():
+def upload_file(event=None):
     file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
     file_path = filedialog.askopenfilename(filetypes=file_types)
     if(file_path):
@@ -29,21 +29,20 @@ def upload_file():
 
         read_document(file_path)
 
-def download_file():
+def download_file(event=None):
     save_file_path = filedialog.asksaveasfilename(filetypes=[('WAV Files', '*.wav')], defaultextension='.wav')
     #print(settings.temp_wav_path)
     #print(save_file_path)
     if(save_file_path):
         shutil.move(settings.temp_wav_path, save_file_path)
 
-
-def left():
+def left(event=None):
     if(settings.sentenceIndex > 0):
         settings.sentenceIndex -= 1
 
-
-def right():
+def right(event=None):
     settings.sentenceIndex += 1
+
 
 def save_temporary_audio():
     disable_buttons()
@@ -85,9 +84,9 @@ def read_text(*text):
             update_text_area(text[settings.sentenceIndex])
 
             engine.say(text[settings.sentenceIndex])
+            settings.sentenceIndex += 1
             engine.runAndWait()
             engine.stop()
-            settings.sentenceIndex += 1
 
         else:
             time.sleep(0.1)
@@ -117,8 +116,13 @@ def enable_buttons():
     right_button.config(state="normal")
 
     upload_button.config(state="normal")
-    
 
+def close_main_windows():
+    settings.appRunning = False
+    while(settings.reading):
+        time.sleep(0.1)
+    window.destroy()
+    
 
 settings.temp_dir = tempfile.mkdtemp()
 
@@ -216,13 +220,13 @@ response_label.pack(anchor=tk.W)
 response_text = tk.Text(responses_frame, height=5, width=50)
 response_text.pack(pady=5)
 
-def close_main_windows():
-    settings.appRunning = False
-    while(settings.reading):
-        time.sleep(0.1)
-    window.destroy()
+window.protocol('WM_DELETE_WINDOW', close_main_windows)
 
-window.protocol('WM_DELETE_WINDOW', close_main_windows)  # root is your root window
+window.bind("p", play)
+window.bind("d", download_file)
+window.bind("u", upload_file)
+window.bind("<Left>", left)
+window.bind("<Right>", right)
 
 # Run the main event loop
 settings.appRunning = True
