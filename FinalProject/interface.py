@@ -18,7 +18,7 @@ settings.init()
 
 
 def play(event=None):
-    settings.reading = not settings.reading
+    settings.readingFile = not settings.readingFile
 
 def upload_file(event=None):
     file_types = [("Files", "*.pdf"), ("Files", "*.docx"), ("Files", "*.txt")]
@@ -27,10 +27,9 @@ def upload_file(event=None):
     if(file_path):
         settings.filePath = file_path
         settings.savingFile = True
+
         saveThread = threading.Thread(target=save_temporary_audio)
         saveThread.start()
-
-        read_document(file_path)
 
 def download_file(event=None):
     save_file_path = filedialog.asksaveasfilename(filetypes=[('WAV Files', '*.wav')], defaultextension='.wav')
@@ -49,6 +48,13 @@ def right(event=None):
 
 def save_temporary_audio():
     disable_buttons()
+    
+    if(settings.readingFile):
+        print("stop reading")
+        settings.stopReading = True
+
+    while(settings.readingFile):
+        time.sleep(0.1)
 
     engine = pyttsx3.init()
 
@@ -63,10 +69,12 @@ def save_temporary_audio():
     settings.savingFile = False
     enable_buttons()
 
+    read_document(settings.filePath)
+
 def read_document(filePath):
 
     text = extract_text(filePath)
-    settings.reading = True
+    settings.readingFile = True
 
     settings.sentenceIndex = 0
     readThread = threading.Thread(target=read_text, args=(text))
@@ -74,13 +82,14 @@ def read_document(filePath):
 
 def read_text(*text):
     while(settings.sentenceIndex < len(text)):
-        
-        if(settings.appRunning == False):
-            settings.reading = False
+        print("")
+        if(not settings.appRunning or settings.stopReading):
+            settings.stopReading = False
+            settings.readingFile = False
             return
-        
-        if(settings.reading and not settings.savingFile):
-    
+
+        if(not settings.readingPaused):
+
             engine = pyttsx3.init()
 
             voices = engine.getProperty('voices')
@@ -93,15 +102,12 @@ def read_text(*text):
             settings.sentenceIndex += 1
             engine.runAndWait()
             engine.stop()
-
-
         else:
             time.sleep(0.1)
 
         if(settings.appRunning):
             progress_bar['value'] = (settings.sentenceIndex / len(text)) * 100
             window.update_idletasks()
-
 
 def update_text_area(text): 
     text_area.delete(1.0, tk.END)
@@ -131,7 +137,7 @@ def enable_buttons():
 
 def close_main_windows():
     settings.appRunning = False
-    while(settings.reading):
+    while(settings.readingFile or settings.savingFile):
         time.sleep(0.1)
     window.destroy()
     
@@ -176,11 +182,11 @@ text_area = tk.Text(content_frame, height=10, width=50, borderwidth=5)
 text_area.pack(pady=10, padx=(0, 10))
 
 # Load button icons
-upload_icon = Image.open("upload_icon.png") 
-download_icon = Image.open("download_icon.png")  
-play_icon = Image.open("play_icon.jpg")  
-left_icon = Image.open("left_icon.jpg") 
-right_icon = Image.open("right_icon.jpg") 
+upload_icon = Image.open("images/upload_icon.png") 
+download_icon = Image.open("images/download_icon.png")  
+play_icon = Image.open("images/play_icon.jpg")  
+left_icon = Image.open("images/left_icon.jpg") 
+right_icon = Image.open("images/right_icon.jpg") 
 
 
 # Resize button icons

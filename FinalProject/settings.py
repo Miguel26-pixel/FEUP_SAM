@@ -6,14 +6,20 @@ def init():
     global savingFile
     savingFile = False
 
-    global reading
-    reading = False
+    global readingFile
+    readingFile = False
+
+    global readingPaused
+    readingPaused = False
+
+    global stopReading
+    stopReading = False
 
     global filePath
     filePath = ""
 
     global sentenceIndex
-    sentenceIndex = -1
+    sentenceIndex = 0
 
     global voiceId
     voiceId = 0
